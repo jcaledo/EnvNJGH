@@ -1,0 +1,16 @@
+citHeader("To cite EnvNJ in publications use:")
+
+citEntry(entry = "Article",
+	title	   = "Phylogenies from unaligned proteomes using sequence environments of amino acid residues",
+	author	   = person("Juan Carlos", "Aledo"),
+	journal	   = "Scientific Reports",
+	year	   = "2022",
+	volume	   = "12",
+	number	   = "7497",
+	url		   = "https://doi.org/10.1038/s41598-022-11370-x",
+
+	textVersion =
+	paste("Aledo, JC.",
+	"Phylogenies from unaligned proteomes using sequence environments of amino acid residues.",
+	" Sci Rep 12, 7497 (2022).")
+)

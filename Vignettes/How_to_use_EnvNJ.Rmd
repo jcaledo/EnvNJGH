@@ -1,0 +1,131 @@
+---
+title: "How to use EnvNJ"
+author: "Juan Carlos Aledo"
+# date: "5/22/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## How to install EnvNJ
+
+Before you attempt to install **EnvNJ** you should have a relatively recent version of R (4.0.0 or higher) installed and working on your system. Detailed instructions for obtaining and installing R on various platforms can be found on the [ \textcolor{blue}{R home page}](https://www.r-project.org). We also encourage you to install [\textcolor{blue}{RStudio}](https://www.rstudio.com), a useful integrated development environment for R.
+
+
+On all plataforms (Mac, Windows and Linux) open R and use the function `instal.packages()` at the R command prompt to install the package from your local CRNA site:
+
+```{r, eval = FALSE}
+install.packages("EnvNJ")
+```
+
+Alternatively, if your prefer to use RStudio, select \textcolor{purple}{Tools} -> \textcolor{purple}{Install Packages ...}. Enter **EnvNJ** in the  \textcolor{purple}{Packages} text box and then click \textcolor{purple}{Install}.
+
+Another alternative is to install **EnvNJ** using its [\textcolor{blue}{Bitbucket repository}](https://bitbucket.org/jcaledo/envnj) and the R function `install_bitbucket()` from the devtools package.
+
+```{r, eval = FALSE}
+install.packages("devtools")
+library(devtools)
+install_bitbucket("jcaledo/envnj", subdir = "REnvNJ")
+```
+
+
+## Optional Dependencies
+
+Although **EnvNJ** is an R package aimed to generate alignment-independcent phylogenetic trees, occasionally, the user may wish to compare such trees with those obtained using traditional methods based on multiple sequence alignments. Thus, **EnvNJ** includes functions to obtain these trees. However, for that purpose, you should have MUSCLE installed on your system and in the search path for executables. MUSCLE is a fast multiple sequence alignment program available from the [\textcolor{blue}{MUSCLE home page}](http://www.drive5.com/muscle). 
+
+For quick install on MacOS we recommend using [\textcolor{blue}{homebrew}](https://brew.sh/index.html). In a MacOS terminal prompt, paste: 
+
+ `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+ 
+Then, type:
+
+`brew install brewsci/science/muscle`
+
+On a Linux/UNIX system you should use your appropiate package manager (e.g. apt-get for Debian/Ubuntu and nf for Red Hat/Fedora systems). If you experience problems with any of these steps, please read on for alternative installation methods.
+
+## Bovids Phylogeny
+
+The package **EnvNJ** includes data (mtDNA-encoded protein sequences) from 11 species of bovids. This data can be loaded as follows:
+
+```{r}
+library(EnvNJ)
+data(bovids)
+```
+
+If you eximine the loaded data, you will note that is a dataframe with 13 rows (one per mtDNA-encoded protein) and 11 columns (one per species). That is the data structure required to use the function `envnj()` that will built a tree in an alignment-independent and fast way:
+
+```{r include=FALSE}
+Env_result <- envnj(bovids) 
+```
+
+```{r eval = FALSE}
+Env_result <- envnj(bovids) 
+```
+
+The obtained object, that we have decided to name `Env_result`, is actually a list where the first element is a distance matrix and the second element (`Env_result[[2]]`) is the unrooted tree that has been built using those distances. To root the tree we are going to use the function `midpoint()` from the package **phangorn**. The next chunk will install that package if needed and will root the tree.
+
+```{r}
+if (!requireNamespace("phangorn", quietly = TRUE)){
+  install.packages()
+}
+
+Env_tree <- phangorn::midpoint(Env_result[[2]])
+```
+
+Now we can plot the tree using the suitable function from the package **ape**:
+
+```{r}
+ape::plot.phylo(Env_tree, use.edge.length = FALSE)
+```
+
+For comparative purposes, next, we are going to use the same dataset but different methods to reconstruct the bovids phylogeny. Let's start using another method that also works on unaligned sequences. This method is based on the 4-gram frequencies analysis. See [\textcolor{blue}{Bionformatics 18, 100-108}](https://academic.oup.com/bioinformatics/article/18/1/100/243818) for a detailed description of the method.
+
+First, we are going to compute the tetrapeptide frequencies. Please, note that this task can take a few minutes: 
+
+```{r, eval = FALSE}
+pept_frequencies <- ngraMatrix(bovids, k = 4)[[1]]
+```
+
+```{r include = FALSE}
+pept_frequencies <- ngraMatrix(bovids, k = 4)[[1]]
+```
+
+Afterward, we can build the tree using the computed tetrapeptides frequencies:
+
+```{r eval = FALSE}
+svd_tree <- svdgram(pept_frequencies[, -1], rank = 40, species = names(bovids))
+svd_tree_rooted <- ape::root(svd_tree[[1]], outgroup = "Pseudoryx_nghetinhensis", resolve.root = TRUE)
+ape::plot.phylo(svd_tree_rooted, use.edge.length = FALSE)
+```
+
+```{r include = FALSE}
+svd_tree <- svdgram(pept_frequencies[, -1], rank = 40, species = names(bovids))
+svd_tree_rooted <- ape::root(svd_tree[[1]], outgroup = "Pseudoryx_nghetinhensis", resolve.root = TRUE)
+```
+
+```{r, echo = FALSE}
+ape::plot.phylo(svd_tree_rooted, use.edge.length = FALSE)
+```
+
+
+Finally, we are going to repeat the process of reconstructing the phylogenetic relationships betwee these species of bovids, but now using a traditional method (neighbor joining) based on sequence alignment:
+
+
+```{r, eval = FALSE}
+nj_tree <- msa.tree(bovids)
+nj_tree_rooted <- phangorn::midpoint(nj_tree[[3]])
+ape::plot.phylo(nj_tree_rooted, use.edge.length = FALSE)
+```
+
+```{r include=FALSE}
+nj_tree <- msa.tree(bovids)
+nj_tree_rooted <- phangorn::midpoint(nj_tree[[3]])
+ape::plot.phylo(nj_tree_rooted, use.edge.length = FALSE)
+```
+
+```{r, echo = FALSE}
+ape::plot.phylo(nj_tree_rooted, use.edge.length = FALSE)
+```
+

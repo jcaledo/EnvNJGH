@@ -7,10 +7,19 @@ To cite this package you can use:
 Aledo, J.C. Phylogenies from unaligned proteomes using sequence environments of amino acid residues. Sci Rep 12, 7497 (2022). https://doi.org/10.1038/s41598-022-11370-x
 
 
-## Contributing
+## Installing
+The latest stable version can be obtained from the CRAN repository:
 
-We are always interested in improving and adding additional functionality to _EnvNJ_. If you have ideas, suggestions or code that your would like to distribute as part of this package, please contact us (see below).
-You are encouraged to contribute your code or issues directly to this repository. 
+install.packages("EnvNJ")
+
+To get the version currently in development (not tested) you must have the 'devtools' package installed and type in the console:
+
+devtools::install_github(repo = "jcaledo/EnvNJGH", subdir ="EnvNJ")
+
+If desired, any previous version can be installed:
+
+devtools::install_github(repo = "jcaledo/EnvNJGH", subdir = "versions/EnvNJ_v0.1.3")
+
 
 ## Contact
 
